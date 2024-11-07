@@ -1,14 +1,20 @@
-# grants.py
+#hhs_acf_grants.py
 
 import requests
 import pandas as pd
 
-def search_grants(start_date, end_date, program_numbers=None, tas_codes=None, output_path="output/usa_spending_api_grants.csv"):
+program_numbers = []  
+ 
+
+def update_hhs_acf_grants(start_date, end_date):
     url = "https://api.usaspending.gov/api/v2/search/spending_by_award/"
     headers = {"Content-Type": "application/json"}
+
+    tas_codes = [["075", "075-1503"]] 
     
     data = {
         "filters": {
+            "tas_codes": {"require": tas_codes},
             "award_type_codes": ["02", "03", "04", "05"],  # Grant codes
             "time_period": [
                 {
@@ -42,10 +48,6 @@ def search_grants(start_date, end_date, program_numbers=None, tas_codes=None, ou
         "limit": 100
     }
 
-    if program_numbers:
-        data["filters"]["program_numbers"] = program_numbers
-    if tas_codes:
-        data["filters"]["tas_codes"] = {"require": tas_codes}
 
     award_data = []
 
@@ -96,7 +98,8 @@ def search_grants(start_date, end_date, program_numbers=None, tas_codes=None, ou
         else:
             print(f"Error: {response.status_code} - {response.text}")
             break
-
+    
+    output_path = "output/hhs_acf_grants.csv"
     if award_data:
         award_data_df = pd.DataFrame(award_data)
         award_data_df.to_csv(output_path, index=False)
